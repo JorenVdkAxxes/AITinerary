@@ -22,7 +22,7 @@ namespace ConsoleApp1
                    "gpt-35-turbo-16k",
                    new ChatCompletionsOptions(new[]
                    {
-                       //new ChatMessage(ChatRole.System, ""),
+                       new ChatMessage(ChatRole.System, GetSystemDefinition()),
                        new ChatMessage(ChatRole.User, input)
                    }));
 
@@ -48,6 +48,16 @@ namespace ConsoleApp1
             Console.WriteLine("Input: ");
             var input = Console.ReadLine();
             return input;
+        }
+
+        private static string GetSystemDefinition()
+        {
+            return "Assistant is a large language model designed to help users make their travel itinerary based " +
+                "On a location and a given duration of the holidays." +
+                "You only make suggestions when the user has given a duration." +
+                "You do not answer any other questions. " +
+                "You do not invent places or activities." +
+                "Your name is AITinerary";
         }
     }
 }
