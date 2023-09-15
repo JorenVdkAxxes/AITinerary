@@ -1,4 +1,5 @@
-﻿using Azure;
+﻿using System.Text.Json;
+using Azure;
 using Azure.AI.OpenAI;
 
 namespace ConsoleApp1
@@ -14,17 +15,44 @@ namespace ConsoleApp1
                 new Uri(ENDPOINT),
                 new Azure.AzureKeyCredential(API_KEY));
 
+            var getTravelSuggestionsFuntionDefinition = new FunctionDefinition()
+            {
+                Name = "get_travel_suggestions",
+                Description = "Get the information of a given location",
+                Parameters = BinaryData.FromObjectAsJson(
+                new
+                {
+                    Type = "object",
+                    Properties = new
+                    {
+                        Location = new
+                        {
+                            Type = "string",
+                            Description = "The city and state, e.g. San Francisco, CA",
+                        },
+                        Days = new
+                        {
+                            Type = "number",
+                            Description = "The total of days the user stays around the location"
+                        }
+                    },
+                    Required = new[] { "location", "days" },
+                },
+                new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }),
+            };
+
+            var chatCompletionsOptions = new ChatCompletionsOptions();
+            chatCompletionsOptions.Functions.Add(getTravelSuggestionsFuntionDefinition);
+
             while (true)
             {
                 string? input = GetUserInput();
 
+                chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, input));
+
                 var response = await client.GetChatCompletionsAsync(
                    "gpt-35-turbo-16k",
-                   new ChatCompletionsOptions(new[]
-                   {
-                       //new ChatMessage(ChatRole.System, ""),
-                       new ChatMessage(ChatRole.User, input)
-                   }));
+                   chatCompletionsOptions);
 
                 PrintResponse(response);
             }
